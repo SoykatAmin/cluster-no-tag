@@ -1,0 +1,45 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: "cluster-tag-sbagliati-provisioning-run-"
+  namespace: "bs-team-alpha-dev"
+  labels:
+    tekton.dev/pipeline: "cluster-tag-sbagliati-provisioning"
+    app.kubernetes.io/name: "cluster-tag-sbagliati"
+    app.kubernetes.io/part-of: "cluster-tag-sbagliati"
+    owner: so.amin
+    janus-idp.io/tekton: "cluster-tag-sbagliati-provisioning"
+spec:
+  pipelineRef:
+    name: "cluster-tag-sbagliati-provisioning"
+  timeouts:
+    pipeline: 2h0m0s
+  taskRunTemplate:
+    serviceAccountName: tekton-pipeline
+  params:
+    - name: repo-url
+      value: "https://github.com/SoykatAmin/cluster-tag-sbagliati.git"
+    - name: revision
+      value: main
+    - name: cluster-name
+      value: "cluster-tag-sbagliati"
+    - name: aws-region
+      value: "eu-west-1"
+    - name: state-bucket
+      value: "so-amin-idp-terraform-backend"
+    - name: state-lock-table
+      value: "so-amin-idp-terraform-backend-lock-table"
+  workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        metadata:
+          labels:
+            owner: so.amin
+            cluster: "cluster-tag-sbagliati"
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 5Gi
+          storageClassName: gp3
